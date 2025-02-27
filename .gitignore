@@ -1,0 +1,39 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+frontend/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore appsettings.json
+Backend/appsettings.json
+Backend/appsettings.Development.json
+
+
+# Ignore build and output folders
+Backend/bin/
+Backend/obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+*.db
+
