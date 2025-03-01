@@ -31,11 +31,19 @@ const CharacterProfile = () => {
             {character ? (
                 <div style={{ backgroundColor: "#1a2036", borderRadius: "10px", padding: "20px", display: "inline-block", marginTop: "20px" }}>
                     <h2>{character.Title} {character.Name}</h2>
-                    <img src={character.CharacterImage} alt={character.name} width="150" />
+                    {console.log("Image URL sent to backend:", character.characterImage)}
+                    <img
+                      src={`http://localhost:5270/api/blizzard/character-image?imageUrl=${encodeURIComponent(character.characterImage)}`}
+                      alt={character.Name}
+                      width="150"
+                    />
+
+
                     <p><strong>Realm:</strong> {character.realm}</p>
                     <p><strong>Faction:</strong> {character.faction}</p>
                     <p><strong>Race:</strong> {character.race}</p>
-                    <p><strong>Class:</strong> {character.characterclass}</p>
+                    <p><strong>Gender:</strong> {character.gender}</p>
+                    <p><strong>Class:</strong> {character.characterClass}</p>
                     <p><strong>Spec:</strong> {character.specialization}</p>
                     <p><strong>Level:</strong> {character.level}</p>
                     <p><strong>Item Level:</strong> {character.equippedItemLevel} (Avg: {character.averageItemLevel})</p>
