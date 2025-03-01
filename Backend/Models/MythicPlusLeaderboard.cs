@@ -48,8 +48,5 @@ namespace Backend.Models
         public RealmInfo Realm { get; set; }
     }
 
-    public class RealmInfo
-    {
-        public string Slug { get; set; }
-    }
+
 }
