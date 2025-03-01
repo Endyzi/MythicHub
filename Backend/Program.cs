@@ -15,7 +15,10 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials() // important for allowing cookies/credentials
+              .SetIsOriginAllowed(_ => true) // allows all origins
+              .WithExposedHeaders("Content-Disposition"); //allows, showing specific headers if needed
     });
 });
 
