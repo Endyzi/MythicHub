@@ -36,6 +36,9 @@ namespace Backend.Models
 
     [JsonPropertyName("media")]
     public MediaInfo Media { get; set; }
+
+     [JsonPropertyName("gender")]
+    public GenderInfo Gender { get; set; }
 }
 
 public class CharacterRealmInfo
@@ -54,6 +57,9 @@ public class RaceInfo
 {
     [JsonPropertyName("name")]
     public string Name { get; set; }
+
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
 }
 
 public class CharacterClassInfo
@@ -79,4 +85,14 @@ public class MediaInfo
     [JsonPropertyName("href")]
     public string Href { get; set; }
 }
+
+public class GenderInfo
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; } 
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } 
+}
+
 }

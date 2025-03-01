@@ -64,13 +64,15 @@ public class BlizzardCharacterController : ControllerBase
                 Realm = characterData.Realm?.Name ?? "Unknown",
                 Faction = characterData.Faction?.Name ?? "Unknown",
                 Race = characterData.Race?.Name ?? "Unknown",
+                RaceId = characterData.Race?.Id ?? 0,
                 CharacterClass = characterData.CharacterClass?.Name ?? "Unknown",
                 Specialization = characterData.ActiveSpec?.Name ?? "Unknown",
                 Level = characterData.Level,
                 AverageItemLevel = characterData.AverageItemLevel,
                 EquippedItemLevel = characterData.EquippedItemLevel,
                 Title = characterData.ActiveTitle?.Name ?? "",
-                CharacterImage = characterData.Media?.Href ?? ""
+                CharacterImage = characterData.Media?.Href ?? "",
+                Gender = characterData.Gender?.Type ?? "male"
             };
 
             return Ok(profile);
@@ -81,6 +83,73 @@ public class BlizzardCharacterController : ControllerBase
         }
     }
 
+
+    /*"A resource is blocked by OpaqueResponseBlocking, please check browser console for details." got this error from fetching the image in get character function 
+    probably cors error, image url is pointing to another extern url from blizzard, need to bypass it with the function below.
+    */
+    [HttpGet("character-image")]
+    [EnableCors("AllowFrontend")]
+    public async Task<IActionResult> GetCharacterImage([FromQuery] string imageUrl)
+    {
+
+        Console.WriteLine($"Fetching image from URL: {imageUrl}");
+
+        if (string.IsNullOrEmpty(imageUrl))
+        {
+            return BadRequest("Image URL is required");
+        }
+
+        try
+        {
+            using var client = new HttpClient();
+
+
+            var accessToken = await _authService.GetAccessTokenAsync();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, imageUrl);
+            request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+            var response = await client.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Failed to fetch image. Status Code: {response.StatusCode}");
+                return StatusCode((int)response.StatusCode, "Failed to fetch image.");
+            }
+
+
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("Fetched JSON Data" + json);
+
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            var imageUrlNode = doc.RootElement.GetProperty("assets")[0].GetProperty("value").GetString();
+
+            if (string.IsNullOrEmpty(imageUrlNode))
+            {
+                Console.WriteLine("No image URL found in JSON data.");
+                return NotFound("No image URL found");
+            }
+
+            var imageResponse = await client.GetAsync(imageUrlNode);
+            if (!imageResponse.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Failed to fetch image file. Status Code: {imageResponse.StatusCode}");
+                return StatusCode((int)imageResponse.StatusCode, "Failed to fetch image file");
+            }
+
+            var contentType = imageResponse.Content.Headers.ContentType?.MediaType ?? "image/Jpeg";
+            var imageData = await imageResponse.Content.ReadAsByteArrayAsync();
+
+            Console.WriteLine("Image fetched successfully.");
+            return File(imageData, contentType);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching image: {ex.Message}");
+            return StatusCode(500, $"Error fetching image: {ex.Message}");
+        }
+    }
 
 
     //will fetch top 20 mythic + players with the current highest score
