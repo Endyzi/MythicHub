@@ -2,43 +2,47 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 const CharacterProfile = () => {
-    const { region, realm, name } = useParams();
+    const { region, realm, name } = useParams(); // fetching url params
     const [character, setCharacter] = useState(null);
-    const [loading, setLoading] = useState(true);
+
+    const fetchCharacter = async () => {
+        try {
+            const response = await fetch(
+                `http://localhost:5270/api/blizzard/character/${region}/${realm}/${name}`
+            );
+            if (!response.ok) {
+                console.error("Character not found!");
+                return;
+            }
+            const data = await response.json();
+            console.log("Fetched character data:", data);
+            setCharacter(data);
+        } catch (error) {
+            console.error("Error fetching character:", error);
+        }
+    };
 
     useEffect(() => {
-        const fetchCharacter = async () => {
-            try {
-                const response = await fetch(`http://localhost:5270/api/blizzard/character/${region}/${realm}/${name}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setCharacter(data);
-                } else {
-                    setCharacter(null);
-                }
-            } catch (error) {
-                console.error("Error fetching character details:", error);
-                setCharacter(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchCharacter();
+        fetchCharacter(); // will run automatically when page is loaded
     }, [region, realm, name]);
-
-    if (loading) return <p>Loading...</p>;
-    if (!character) return <p>Character not found.</p>;
-
+    //below values of character. needs to be lowercase to match json response from the blizzard api. Wont work with camel case, unnecessary to convert to lowercase.
     return (
-        <div className="p-6">
-            <h1 className="text-3xl font-bold">{character.name}</h1>
-            <p>Faction: {character.faction}</p>
-            <p>Race: {character.race.name}</p>
-            <p>Class: {character.character_class.name}</p>
-            <p>Level: {character.level}</p>
-            <p>Item Level: {character.equipped_item_level}</p>
-            <img src={character.media.avatar_url} alt={`${character.name}'s Avatar`} />
+        <div style={{ textAlign: "center", color: "white", padding: "20px" }}>
+            {character ? (
+                <div style={{ backgroundColor: "#1a2036", borderRadius: "10px", padding: "20px", display: "inline-block", marginTop: "20px" }}>
+                    <h2>{character.Title} {character.Name}</h2>
+                    <img src={character.CharacterImage} alt={character.name} width="150" />
+                    <p><strong>Realm:</strong> {character.realm}</p>
+                    <p><strong>Faction:</strong> {character.faction}</p>
+                    <p><strong>Race:</strong> {character.race}</p>
+                    <p><strong>Class:</strong> {character.characterclass}</p>
+                    <p><strong>Spec:</strong> {character.specialization}</p>
+                    <p><strong>Level:</strong> {character.level}</p>
+                    <p><strong>Item Level:</strong> {character.equippedItemLevel} (Avg: {character.averageItemLevel})</p>
+                </div>
+            ) : (
+                <p>Loading character data...</p>
+            )}
         </div>
     );
 };
