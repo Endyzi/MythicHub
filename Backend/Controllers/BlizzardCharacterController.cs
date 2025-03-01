@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Backend.Models;
 using System.Reflection.Metadata.Ecma335;
 
+
 [ApiController]
 [Route("api/blizzard")]//api route to test if the api is working to fetch certain character
 public class BlizzardCharacterController : ControllerBase
@@ -27,9 +28,57 @@ public class BlizzardCharacterController : ControllerBase
     [HttpGet("character/{region}/{realm}/{characterName}")]
     public async Task<IActionResult> GetCharacter(string region, string realm, string characterName)
     {
-        var characterData = await _characterService.GetCharacterDataAsync(region, realm, characterName);
-        return Ok(characterData);
+        
+         if (string.IsNullOrEmpty(region) || string.IsNullOrEmpty(realm) || string.IsNullOrEmpty(characterName))
+    {
+        return BadRequest("Region, Realm, and Character Name are required.");
     }
+        
+        var characterJson = await _characterService.GetCharacterDataAsync(region, realm, characterName);
+
+        if (string.IsNullOrEmpty(characterJson))
+        {
+            return NotFound("Character not found");
+        }
+        //log json to see if the format is correct.
+        Console.WriteLine("Blizzard API response:");
+        Console.WriteLine(characterJson); //writes json in terminal
+
+        try
+        {
+            // Deserialisera JSON from Blizzard API
+            var characterData = JsonSerializer.Deserialize<CharacterApiResponse>(characterJson);
+
+            if (characterData == null)
+            {
+                return StatusCode(500, "Failed to parse character data");
+            }
+
+            
+            var profile = new CharacterProfile
+            {
+                Name = characterData.Name ?? "Unknown",
+                Realm = characterData.Realm?.Name ?? "Unknown",
+                Faction = characterData.Faction?.Name ?? "Unknown",
+                Race = characterData.Race?.Name ?? "Unknown",
+                CharacterClass = characterData.CharacterClass?.Name ?? "Unknown",
+                Specialization = characterData.ActiveSpec?.Name ?? "Unknown",
+                Level = characterData.Level,
+                AverageItemLevel = characterData.AverageItemLevel,
+                EquippedItemLevel = characterData.EquippedItemLevel,
+                Title = characterData.ActiveTitle?.Name ?? "",
+                CharacterImage = characterData.Media?.Href ?? ""
+            };
+
+            return Ok(profile);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error processing character data: {ex.Message}");
+        }
+    }
+
+
 
     //will fetch top 20 mythic + players with the current highest score
     [HttpGet("top20")]/*This function is incomplete and needs fixing.*/
