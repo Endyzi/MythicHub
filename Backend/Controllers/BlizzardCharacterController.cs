@@ -4,6 +4,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Backend.Models;
 using System.Reflection.Metadata.Ecma335;
+using Microsoft.AspNetCore.Cors;
+
 
 
 [ApiController]
@@ -26,6 +28,7 @@ public class BlizzardCharacterController : ControllerBase
     }
 
     [HttpGet("character/{region}/{realm}/{characterName}")]
+    [EnableCors("AllowFrontend")]
     public async Task<IActionResult> GetCharacter(string region, string realm, string characterName)
     {
         

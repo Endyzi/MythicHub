@@ -9,16 +9,26 @@ builder.Services.AddHttpClient<BlizzardAuthService>();
 builder.Services.AddHttpClient<BlizzardCharacterService>();
 builder.Services.AddHttpClient<BlizzardCharacterController>();
 
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
+    app.UseCors("AllowFrontend");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
     app.MapControllers();
+    app.Run();
 }
 
 app.UseHttpsRedirection();
